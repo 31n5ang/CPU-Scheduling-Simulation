@@ -1,0 +1,943 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        <link rel="stylesheet" href="style.css" type="text/css"/>
+        <link rel="stylesheet" href="https://pyscript.net/latest/pyscript.css"/>
+        <script defer="defer" src="https://pyscript.net/latest/pyscript.js"></script>
+        <link
+            href="https://fonts.googleapis.com/icon?family=Material+Icons"
+            rel="stylesheet">
+        <style></style>
+        <title>
+            운영체제(OS) 텀 프로젝트 - 프로세스 스케줄링 시뮬레이터
+        </title>
+    </head>
+    <body>
+        <!-- 메인 부분 -->
+        <div id="layout">
+            <div id="upperIntro">
+                <!--제목-->
+                <span class="material-icons">settings</span>
+                <span id="title">Process Scheduling Simulator</span>
+                <span id = "scheduling_method" style="color:red;"> - fcfs</span>
+            </div>
+            <div>
+                <div id="method">
+                    <span class="material-icons" style = "margin-left:26px;">build</span>
+                    <span style="width:150px; font-size: 18px;">스케줄링 방법</span>
+                    <select id="schedulingType" onchange="changeStype()" style="height:30px; margin-right : 50px;">
+                        <option value="fcfs">FCFS</option>
+                        <option value="spn">SPN</option>
+                        <option value="srtn">SRTN</option>
+                        <option value="hrrn">HRRN</option>
+                        <option value="rr">RR</option>
+                        <option value="pswg">PSWG</option>
+                    </select>
+                </div>
+                <div id="input_div">
+                    <div id="timeQuantum" style="display:none;">
+                        Time Quantum :
+                        <input type="text" id="tq" onclick="" value=2>
+                        <span style="font-size:3pt">For RR (기본값 = 2)</span>
+                    </div>
+                    <div style = "margin-top:4px; margin-left:22px;">
+                        도착 시간(AT) :
+                        <input type="text" id="at" style = "width: 49.5px;">
+                    </div>
+                    <div style = "margin-top:4px; margin-left:21px;">
+                        실행 시간(BT) :
+                        <input type="text" id="bt" style = "margin-left :0.5px; width: 50px;">
+                    </div>
+                </div>
+                <div id="addButtons">
+                    <button id="addProcess" href="#" class="btn-two blue mini" onclick="addProcess()">
+                        <span class="material-icons">addchart</span style="font-size:10pt">추가</button><br>
+                    <button id="deleteProcess" href="#" class="btn-two red mini" onclick="deleteProcess()">
+                        <span class="material-icons">delete_outline</span>삭제</button>
+                    <button id="resetProcess" href="#" class="btn-two green mini" onclick="resetProcess()">
+                        <span class="material-icons">autorenew</span>리셋</button>
+                </div>
+                <div id="addProcessorType">
+                    <span id ="lists" style = "font-size:22px; margin-left: 80px">[ 프로세서 목록 ]</span>
+                    <table style = "border-collapse: collapse; margin-top: 10px; width: 240px">
+                        <tr>
+                            <td>ID</td>
+                            <td>타입</td>
+                        </tr>
+                        <tr>
+                            <td>1</td>
+                            <td>
+                                <select id="c1" onchange="changeProcessorType()">
+                                    <option value="n">미사용</option>
+                                    <option value="p">P</option>
+                                    <option value="e">E</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>2</td>
+                            <td>
+                                <select id="c2" onchange="changeProcessorType()">
+                                    <option value="n">미사용</option>
+                                    <option value="p">P</option>
+                                    <option value="e">E</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>3</td>
+                            <td>
+                                <select id="c3" onchange="changeProcessorType()">
+                                    <option value="n">미사용</option>
+                                    <option value="p">P</option>
+                                    <option value="e">E</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>4</td>
+                            <td>
+                                <select id="c4" onchange="changeProcessorType()">
+                                    <option value="n">미사용</option>
+                                    <option value="p">P</option>
+                                    <option value="e">E</option>
+                                </select>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div id="startButton">
+                    <button href="#" class="btn-3d yellow" py-click="set_object()">
+                        <span class="material-icons">bar_chart</span>
+                        <span>스케줄링 결과 확인</span>
+                    </button>
+                </div>
+            </div>
+            <div id="processList">
+                <span id ="lists" style = "font-size:22px; margin-left: 100px;">[ 프로세스 목록 ]</span>
+                <table id="processTable" style = "border-collapse: collapse; width: 300px; margin-top: 10px;">
+                    <tr>
+                        <td>PID</td>
+                        <td>도착 시간(AT)</td>
+                        <td>실행 시간(BT)</td>
+                    </tr>
+                </table>
+            </div>
+
+            <div id="ganttChart">
+                <table id="timeTable" style = "border-collapse: collapse; float: left;"></table>
+                <span id = "loading" style="display:none;"><img src="loading.gif" style="width:60px; height:60px;"/></span>
+            </div>
+
+            <div id="resultTable">
+                <table id="result_table" style = "border-collapse: collapse;">
+                    <tr>
+                        <td id="pid">PID</td>
+                        <td>Arrival time(AT)</td>
+                        <td>Burst time(BT)</td>
+                        <td>Waiting time(WT)</td>
+                        <td>Turnaround time(TT)</td>
+                        <td>Normalized Turnaround time(NTT)</td>
+                    </tr>
+                </table>
+            </div>
+            <div id="displayResult" style = "margin-left : 15px">
+                <h3 id="powerConsumption"></h3>
+                <h3 id="averageResponseTime"></h3>
+            </div>
+
+            <div id="underIntro">
+                <!--하단 소개 부분 -->
+                Adios | 조한창(조장) 송민상 송승헌 황보성우<br>
+                2023 1학기 운영체제 Term Project
+            </div>
+        </div>
+
+        <!-- 메인 끝 -->
+
+        <script type="text/javascript" src="main.js"></script>
+        <py-script>
+import math
+from js import get_processes, get_processors, get_schedulingType, get_tq, make_start_table, make_end_table, getColor, put_result, put_pc_avg
+from pyodide.ffi import to_js
+from datetime import datetime, timedelta
+
+processes = []
+processors = []
+processes_ = []
+processors_ = []
+schedulingType_ = ""
+PowerConsumption = 0
+AverageResponseTime = 0
+
+# [pid, at, bt, wt, tt, ntt]
+result = []
+
+# 자바스크립트에서 받은 값 가공
+def set_object(*args):
+    processes.clear()
+    processors.clear()
+    result.clear()
+    processes_ = get_processes().to_py()
+    processors_ = get_processors().to_py()
+    schedulingType_ = get_schedulingType()
+    for i in range(0, len(processes_)):
+        processes.append(
+            Process(processes_[i][0], processes_[i][1], processes_[i][2]))
+
+    for i in range(0, len(processors_)):
+        processors.append(Processor(processors_[i][0], processors_[i][1]))
+    scheduling_start(schedulingType_)
+
+    # 스케줄링 시작
+
+
+
+def scheduling_start(schedulingType_):
+    if len(processors) == 0:
+        js.alert("프로세서를 할당해주세요!")
+        return
+    elif len(processes) == 0:
+        js.alert("프로세스를 할당해주세요!")
+        return
+    if schedulingType_ == "fcfs":
+        PowerConsumption, AverageResponseTime = FCFS(processes, processors)
+    elif schedulingType_ == "spn":
+        PowerConsumption, AverageResponseTime = SPN(processes, processors)
+    elif schedulingType_ == "srtn":
+        PowerConsumption, AverageResponseTime = SRTN(processes, processors)
+    elif schedulingType_ == "hrrn":
+        PowerConsumption, AverageResponseTime = HRRN(processes, processors)
+    elif schedulingType_ == "rr":
+        PowerConsumption, AverageResponseTime = RR(
+            processes, processors, js.get_tq())
+    elif schedulingType_ == "pswg":
+        PowerConsumption, AverageResponseTime = PSWG(processes, processors)
+    processes.sort(key=lambda x: x.pid)
+    for i in range(0, len(processes)):
+        p = processes[i]
+        result.append([p.pid, p.arrival_time, p.burst_time,
+                       p.waiting_time, p.turnAround_time, p.nTurnAround_time])
+
+    # 자바스크립트로 결과값 넘겨주기
+    js.put_result(to_js(result))
+    js.put_pc_avg(PowerConsumption, AverageResponseTime)
+
+
+class Processor:
+    def __init__(self, id, types):
+        self.id = id
+        self.types = types
+        self.state = 0  # 프로세서 상태
+        self.using_process_id = -1
+        if self.types == 'P' or types == 'p':  # P core(성능)
+            self.start_power = 0.5  # 시동 전력
+            self.speed = 2  # 처리 속도
+            self.power_use = 3  # 전력 소비량
+        if self.types == 'E' or types == 'e':  # E core(효율)
+            self.start_power = 0.1
+            self.speed = 1
+            self.power_use = 1
+        self.recentWorkedTime = -1 #마지막으로 작동된 시간
+        self.completed = 0 #프로세스 선택 기준
+
+
+class Process:
+    def __init__(self, pid, arrival_time, burst_time):
+        # 공통
+        self.pid = pid  # 프로세스 id
+        self.start_time = -1  # 예상 시작 시간
+        self.arrival_time = arrival_time  # 프로세스 도착시간
+        self.burst_time = burst_time  # 실행 시간
+        self.total_burst_time = burst_time  # 실제 실행 시간
+        self.end_time = -1  # 예상 종료 시간
+        self.nTurnAround_time = -1.1  # 예상 Normalized TT time
+        self.waiting_time = 0 #WT
+        self.turnAround_time = -1 #TT
+
+        # RR 추가 속성
+        self.leftTQ = -1  # 남은 Time quantum
+        self.running = 0  # 사용중인 프로세서 아이디
+        self.bursted_time = 0  # 얼마나 실행되었는지
+
+        # SRTN 추가 속성
+        self.remain_time = burst_time  # 잔여 시간
+
+
+"""
+FCFS 스케줄링 알고리즘을 구현한 함수입니다.
+"""
+
+
+def FCFS(processes, processors):
+    js.make_start_table()
+    waiting_process = []  # 프로세서 할당받지 못한 프로세스들
+    running_process = []  # 프로세서 할당받아 실행중인 프로세스, 할당된 프로세서
+    using_process = []  # 프로세서가 할당받은 프로세스의 아이디 리스트
+    PowerConsumption = 0  # 소비전력량
+    AverageResponseTime = 0  # 평균응답시간
+    end_count = 0  # 종료조건
+    current_time = 0  # 현재 시각
+    processes.sort(key=lambda x: x.arrival_time)  # 도착 시간(일찍 도착한 순으로 정렬)
+    processors.sort(key=lambda x: x.types)  # 효율 중심
+    flag = False
+
+    while not flag:
+        using_process = []
+        for process in processes:
+            if current_time == process.arrival_time:  # 프로세스가 도착하면
+                waiting_process.append(process)
+
+        for rProcess in running_process[:]:
+            if current_time == rProcess[1].end_time:  # 프로세스가 종료되었다면
+                rProcess[0].state = 1  # 프로세서 미사용중으로 표시
+                end_count += 1  # 완료된 프로세스 개수 + 1
+                for processor in processors:
+                    if processor.using_process_id == rProcess[1].pid:
+                        processor.using_process_id = -1
+                        break
+                running_process.remove(rProcess)
+
+        for processor in processors:
+            if len(waiting_process) != 0 and processor.state != 2:  # 기다리는 프로세스가 있을 때 and 프로세서가 할당받지 않은 상태
+                picked_process = waiting_process.pop(0)
+                if processor.speed == 2:  # P-core면
+                    if picked_process.burst_time % 2 == 0:  # 소수점 처리
+                        picked_process.total_burst_time = picked_process.burst_time // 2
+                    else:  # 홀수면 +1 (소수점 무시 )
+                        picked_process.total_burst_time = picked_process.burst_time // 2 + 1
+                picked_process.start_time = current_time  # 시작 시간(start_time) 구하기
+                picked_process.end_time = picked_process.start_time + picked_process.total_burst_time  # endtime구하기
+                picked_process.waiting_time = picked_process.start_time - picked_process.arrival_time  # wt구하기
+                picked_process.turnAround_time = picked_process.waiting_time + picked_process.total_burst_time  # TT 구하기
+                picked_process.nTurnAround_time = round(picked_process.turnAround_time / picked_process.burst_time,1)  # nTT 구하기
+
+                if processor.state == 0:  # 시동 걸기
+                    if processor.speed == 2:
+                        PowerConsumption += 0.5
+                    else:
+                        PowerConsumption += 0.1
+                processor.state = 2  # 현재 프로세서 사용중으로 표시
+                processor.using_process_id = picked_process.pid
+                running_process.append((processor, picked_process))  # (사용하는 프로세서,작업중인 프로세스)
+
+        for processor in processors:  # 전력계산
+            if processor.state == 1:  # 실행중인 프로세서에게 다음 프로세스가 할당되지 않으면
+                processor.state = 0  # 프로세스 시동 끔
+            elif processor.state == 2:  # 프로세스 전력 계산
+                if processor.speed == 2:
+                    PowerConsumption += 3
+                else:
+                    PowerConsumption += 1
+
+        x = sorted(processors,key=lambda x:x.id)
+        for processor in x:
+            using_process.append(processor.using_process_id)
+
+        current_time += 1
+
+        if end_count == len(processes):  # 종료조건(완료된 프로세스 개수)
+            flag = True
+        #테이블 생성 및 스타일 처리 부분
+        table = js.document.getElementById("timeTable")
+        for i in range(0, len(processors)):
+            if flag == True:
+                break
+            newCell = table.rows[i].insertCell()
+            if using_process[i] != -1:
+                newCell.innerText = using_process[i]
+                newCell.style.background = js.getColor(using_process[i] - 1)
+                newCell.style.color = "white"
+            newCell.style.border = "0px"
+            newCell.style.width = "40px"
+        ##################
+
+    for process in processes:  # 평균응답시간 계산
+        AverageResponseTime += process.turnAround_time
+    AverageResponseTime = AverageResponseTime / len(processes)
+
+    js.make_end_table(current_time)
+    return PowerConsumption, AverageResponseTime  # 소비전력량, 평균응답시간 반환
+
+    """
+    RR 스케줄링 알고리즘을 구현한 함수입니다.
+    """
+
+
+def RR(processes, processors, time_quantum):
+    js.make_start_table()
+    ready_process = []
+    using_process = []  # 프로세서가 할당받은 프로세스의 아이디 리스트
+    flag = False
+    current_time = 0
+    end_count = 0
+    PowerConsumption = 0
+    AverageResponseTime = 0  # 평균응답시간
+    processes.sort(key=lambda x: x.arrival_time)  # 도착 시간(일찍 도착한 순으로 정렬)
+    processors.sort(key=lambda x: x.types)  # 효율 중심
+    for p in processes:
+        p.total_burst_time = 0
+
+    # 각 프로세스에 time quantum할당
+    for p in processes:
+        p.leftTQ = time_quantum
+
+    while not flag:
+        using_process = []
+
+        for process in processes:  # 도착 시간이 된 프로세스 넣어주기
+            if process.arrival_time == current_time:
+                ready_process.append(process)
+                process.waiting_time = 0
+
+        # RR
+        for processor in processors:
+            if processor.state == 1:  # 코어가 작동중이라면
+                for process in ready_process:
+                    if process.running == processor.id:  # 현재 코어에 할당된 프로세스 찾기
+                        PowerConsumption += processor.power_use
+                        processor.recentWorkedTime = current_time
+                        process.bursted_time += 1 * processor.speed
+                        process.total_burst_time += 1
+                        process.leftTQ -= 1
+                        if process.leftTQ <= 0:  # time quantum 모두 소비했다면
+                            process.running = 0
+                            process.leftTQ = time_quantum
+                            processor.state = 0
+                            ready_process.remove(process)  
+                            ready_process.append(process) # 대기실 Queue처럼 tq 소비한 프로세스는 맨 마지막에 넣기
+                        if process.bursted_time >= process.burst_time:  # 실행 시간을 모두 완료했다면
+                            for processor in processors:
+                                if processor.using_process_id == process.pid:
+                                    processor.using_process_id = -1
+                                    break
+                            ready_process.remove(process)
+                            end_count += 1
+                            processor.state = 0
+                            process.running = 0
+                            process.end_time = current_time
+                            process.total_burst_time = math.ceil(process.total_burst_time)  # 실행시간 6.5 -> 7
+                            process.turnAround_time = process.waiting_time + process.total_burst_time
+                            process.nTurnAround_time = round(process.turnAround_time / process.burst_time, 1)
+                            break
+            if processor.state == 0:  # 코어가 비어있다면
+                for process in ready_process:
+                    if process.running == 0:
+                        if process.start_time == -1:
+                            process.start_time = current_time
+                        if processor.recentWorkedTime < current_time:  # 코어를 새로 작동시켰다면
+                            PowerConsumption += processor.start_power
+                        process.running = processor.id
+                        processor.state = 1
+                        processor.using_process_id = process.pid
+                        break
+
+        for process in ready_process:
+            if (process.running == 0):
+                process.waiting_time += 1
+
+        if (end_count == len(processes)):
+            flag = True
+
+        x = sorted(processors,key=lambda x:x.id)
+        for processor in x:
+            using_process.append(processor.using_process_id)
+        
+        #테이블 생성 및 스타일 처리 부분
+        table = js.document.getElementById("timeTable")
+        for i in range(0, len(processors)):
+            if flag == True:
+                break
+            newCell = table.rows[i].insertCell()
+            if using_process[i] != -1:
+                newCell.innerText = using_process[i]
+                newCell.style.background = js.getColor(using_process[i] - 1)
+                newCell.style.color = "white"
+            newCell.style.border = "0px"
+            newCell.style.width = "40px"
+        ##################
+        current_time += 1
+
+    for process in processes:  # 평균응답시간 계산
+        AverageResponseTime += process.turnAround_time
+    AverageResponseTime = AverageResponseTime / len(processes)
+    js.make_end_table(current_time)
+    return PowerConsumption, AverageResponseTime
+
+    """
+    SPN 스케줄링 알고리즘을 구현한 함수입니다.
+    """
+
+
+def SPN(processes, processors):
+    js.make_start_table()
+    waiting_process = []  # 프로세서 할당받지 못한 프로세스들
+    running_process = []  # 프로세서 할당받아 실행중인 프로세스, 할당된 프로세서
+    using_process = []  # 프로세서가 할당받은 프로세스의 아이디 리스트
+    PowerConsumption = 0  # 소비전력량
+    AverageResponseTime = 0  # 평균응답시간
+    end_count = 0  # 종료조건
+    current_time = 0  # 현재 시각
+
+    processes.sort(key=lambda x: x.arrival_time)  # 도착 시간(일찍 도착한 순으로 정렬)
+    processors.sort(key=lambda x: x.types)  # 효율 중심
+
+    flag = False
+    while not flag:
+        using_process = []
+        for process in processes:
+            if current_time == process.arrival_time:  # 프로세스가 도착하면
+                waiting_process.append(process)
+        for rProcess in running_process[:]:
+            if current_time == rProcess[1].end_time:  # 프로세스가 종료되었다면
+                rProcess[0].state = 1  # 프로세서 미사용중으로 표시
+                for processor in processors:
+                    if processor.using_process_id == rProcess[1].pid:
+                        processor.using_process_id = -1
+                        break
+                end_count += 1  # 완료된 프로세스 개수 + 1
+                running_process.remove(rProcess)
+
+        for processor in processors:
+            if len(waiting_process) != 0 and processor.state != 2:  # 기다리는 프로세스가 있을 때 and 프로세서가 할당받지 않은 상태
+                waiting_process.sort(key=lambda x: x.burst_time)  # burst time 짧은 순으로 정렬
+                picked_process = waiting_process.pop(0)
+                if processor.speed == 2:  # P-core면
+                    if picked_process.burst_time % 2 == 0:  # 소수점 처리
+                        picked_process.total_burst_time = picked_process.burst_time // 2
+                    else:  # 홀수면 +1 (소수점 무시 )
+                        picked_process.total_burst_time = picked_process.burst_time // 2 + 1
+
+                picked_process.start_time = current_time  # 시작 시간(start_time) 구하기
+                picked_process.end_time = picked_process.start_time + picked_process.total_burst_time  # endtime구하기
+                picked_process.waiting_time = picked_process.start_time - picked_process.arrival_time  # wt구하기
+                picked_process.turnAround_time = picked_process.waiting_time + picked_process.total_burst_time  # TT 구하기
+                picked_process.nTurnAround_time = round(picked_process.turnAround_time / picked_process.burst_time,1)  # nTT 구하기
+                if processor.state == 0:  # 시동 걸기
+                    if processor.speed == 2:
+                        PowerConsumption += 0.5
+                    else:
+                        PowerConsumption += 0.1
+
+                processor.state = 2  # 현재 프로세서 사용중으로 표시
+                processor.using_process_id = picked_process.pid
+                running_process.append((processor, picked_process))  # (사용하는 프로세서,작업중인 프로세스)
+
+        for processor in processors:  # 전력계산
+            if processor.state == 1:  # 실행중인 프로세서에게 다음 프로세스가 할당되지 않으면
+                processor.state = 0  # 프로세스 시동 끔
+            elif processor.state == 2:  # 프로세스 전력 계산
+                if processor.speed == 2: #p코어
+                    PowerConsumption += 3
+                else: #e코어
+                    PowerConsumption += 1
+
+        x = sorted(processors,key=lambda x:x.id)
+        for processor in x:
+            using_process.append(processor.using_process_id)
+
+        current_time += 1
+
+        if end_count == len(processes):  # 종료조건(완료된 프로세스 개수)
+            flag = True
+        #테이블 생성 및 스타일 처리 부분
+        table = js.document.getElementById("timeTable")
+        for i in range(0, len(processors)):
+            if flag == True:
+                break
+            newCell = table.rows[i].insertCell()
+            if using_process[i] != -1:
+                newCell.innerText = using_process[i]
+                newCell.style.background = js.getColor(using_process[i] - 1)
+                newCell.style.color = "white"
+            newCell.style.border = "0px"
+            newCell.style.width = "40px"
+        ##################
+
+    for process in processes:  # 평균응답시간 계산
+        AverageResponseTime += process.turnAround_time
+    AverageResponseTime = AverageResponseTime / len(processes)
+    js.make_end_table(current_time)
+    return PowerConsumption, AverageResponseTime  # 소비전력량, 평균응답시간 반환
+
+"""
+SRTN 스케줄링 알고리즘을 구현한 함수입니다.
+"""
+
+def SRTN(processes, processors):
+    js.make_start_table()
+    waiting_process = []  # 프로세서 할당받지 못한 프로세스들
+    running_process = []  # 프로세서 할당받아 실행중인 프로세스, 할당된 프로세서
+    using_process = []  # 프로세서가 할당받은 프로세스의 아이디 리스트
+    PowerConsumption = 0
+    AverageResponseTime = 0  # 평균응답시간
+    end_count = 0  # 종료조건
+    current_time = 0  # 현재 시각
+
+    min_remain_time = math.inf  # 최소 잔여 시간(waiting_process)
+    min_remain_time_idx = 0  # 최소 잔여 시간인 프로세스 인덱스
+    max_remain_time = -math.inf  # 최대 잔여 시간(running_process)
+    working_processor_count = 0  # 작동 중인 프로세서수
+    reach = False  # 프로세스가 ready상태에 진입했을 때를 확인하기 위한 변수
+    real_practice_check = []  # WT를 판단하기 위한 리스트(RT가 감소될 때 마다 1씩 증가)
+
+    processes.sort(key=lambda x: x.arrival_time)  # 도착 시간(일찍 도착한 순으로 정렬)
+    processors.sort(key=lambda x: x.types)  # 효율 중심
+
+    flag = False
+    while not flag:
+        using_process = []
+        for process in processes:
+            if current_time == 0:  # 1번만 초기화하기 위해서
+                real_practice_check.append(0)  # real_practice_check를 프로세스수 만큼 0으로 초기화
+
+            if current_time == process.arrival_time:  # 프로세스가 도착하면
+                reach = True  # 프로세스가 ready상태가 되었을 때 True
+                waiting_process.append(process)
+
+        for processor in processors:
+            if len(waiting_process) != 0 and len(waiting_process) <= (
+                    len(processors) - working_processor_count) and processor.state != 2:  # 기다리는 프로세스가 있으며, 쉬고있는 프로세서 수
+                # 기다리는 프로세스 수가 0이 아니면서, 프로세스 수보다 쉬고있는 프로세서 수가 많거나 같을 때 => 잔여시간 비교없이 할당
+                waiting_process.sort(key=lambda x: x.burst_time)
+                picked_process = waiting_process.pop(0)
+
+                if processor.state == 0:  # 시동 걸기
+                    if processor.speed == 2:
+                        PowerConsumption += 0.5
+                    else:
+                        PowerConsumption += 0.1
+                processor.using_process_id = picked_process.pid
+                processor.state = 2  # 현재 프로세서 사용중으로 표시
+                working_processor_count += 1  # 프로세서가 할당
+                running_process.append((processor, picked_process))  # (사용하는 프로세서,작업중인 프로세스)
+
+            elif len(waiting_process) > (len(processors) - working_processor_count) and (
+                    len(processors) - working_processor_count) != 0 \
+                    and processor.state != 2:  # 기다리는 프로세스 수가 쉬고있는 프로세서 수보다 많을 때 => 잔여시간 비교 후 할당
+                for i in range(len(waiting_process)):  # waiting_process중 최소잔여시간을 가진 프로세스 구하기
+                    if waiting_process[i].remain_time < min_remain_time:
+                        min_remain_time = waiting_process[i].remain_time
+                        min_remain_time_idx = i  # 최소잔여시간을 가진 프로세스의 인덱스
+                if processor.state == 0:  # 시동 걸기
+                    if processor.speed == 2:
+                        PowerConsumption += 0.5
+                    else:
+                        PowerConsumption += 0.1
+                processor.state = 2  # 현재 프로세서 사용중으로 표시
+                working_processor_count += 1
+                processor.using_process_id = waiting_process[min_remain_time_idx].pid
+                running_process.append((processor, waiting_process[min_remain_time_idx]))  # (사용하는 프로세서,작업중인 프로세스)
+                waiting_process.remove(waiting_process[min_remain_time_idx])  # 할당됐으므로 waiting_process에서 제거
+                min_remain_time = math.inf  # 초기화
+
+                if len(waiting_process) == 1:
+                    reach = False
+
+        for processor in processors:
+            if len(waiting_process) != 0 and len(processors) == working_processor_count and reach == True:
+                # 모든 프로세서가 일하고 있고, 새 프로세스가 ready상태가 되었을 때 => 잔여시간 비교 후 프로세서 뺏기(비교)
+                min_remain_time = math.inf  # 초기화
+                for i in range(len(waiting_process)):
+                    if waiting_process[i].remain_time < min_remain_time:
+                        min_remain_time = waiting_process[i].remain_time
+                        min_remain_time_idx = i
+
+                max_remain_time = -math.inf
+                for rprocess in running_process:  # 일하는 프로세스 중 최대잔여시간 구하기
+                    if rprocess[1].remain_time > max_remain_time:
+                        max_remain_time = rprocess[1].remain_time
+
+                if min_remain_time < max_remain_time:  # 기다리는 프로세스의 최소잔여시간이 일하고있는 프로세스의 최대잔여시간보다 작을 때
+                    for rProcess in running_process[:]:
+                        if rProcess[1].remain_time == max_remain_time:  # 구했던 프로세스의 최대잔여시간과 같을 때
+                            waiting_process.append(rProcess[1])  # 최대잔여시간을 가진 프로세스를 중단시키고 waiting_process에 넣기
+                            running_process.remove(rProcess)  # running_process에서 최대잔여시간을 가진 프로세스를 제거
+                            rProcess[0].using_process_id = waiting_process[min_remain_time_idx].pid
+                            running_process.append((rProcess[0], waiting_process[
+                                min_remain_time_idx]))  # 최소잔여시간을 가진 프로세스를 running_process에 넣기
+                            waiting_process.remove(
+                                waiting_process[min_remain_time_idx])  # 최소잔여시간을 가진 프로세스를 waiting_process에서 제거
+                            min_remain_time = math.inf  # 초기화
+                            max_remain_time = -math.inf
+
+        for processor in processors:  # 전력계산
+            if processor.state == 1:  # 실행중인 프로세서에게 다음 프로세스가 할당되지 않으면
+                processor.state = 0  # 프로세스 시동 끔
+            elif processor.state == 2:  # 프로세스 전력 계산
+                if processor.speed == 2:
+                    PowerConsumption += 3
+                else:
+                    PowerConsumption += 1
+
+        x = sorted(processors,key=lambda x:x.id)
+        for processor in x:
+            using_process.append(processor.using_process_id)
+        current_time += 1
+        reach = False  # 1초 지나서 fasle로 초기화
+
+        for rProcess in running_process[:]:
+            if rProcess[1].burst_time == rProcess[1].remain_time:
+                rProcess[1].start_time = current_time - 1
+
+            if rProcess[0].speed == 2:  # P코어일 때
+                rProcess[1].remain_time -= 2  # remain_time을 -2씩 감소
+            else:
+                rProcess[1].remain_time -= 1  # E코어일 때
+            real_practice_check[rProcess[1].pid - 1] += 1  # remain_time을 -1씩 감소
+
+            if rProcess[1].remain_time <= 0:
+                rProcess[1].end_time = current_time
+                rProcess[1].turnAround_time = rProcess[1].end_time - rProcess[1].arrival_time
+                rProcess[1].waiting_time = rProcess[1].turnAround_time - real_practice_check[
+                    rProcess[1].pid - 1]  # TT - RT 감소 카운트
+                rProcess[1].nTurnAround_time = round(rProcess[1].turnAround_time / rProcess[1].burst_time, 1)
+                for processor in processors:
+                    if processor.using_process_id == rProcess[1].pid:
+                        processor.using_process_id = -1
+                        break
+                rProcess[0].state = 1  # 프로세서 미사용중으로 표시
+                working_processor_count -= 1  # 프로세스가 종료됐기 때문에 -1
+                end_count += 1  # 완료된 프로세스 개수 + 1
+                running_process.remove(rProcess)  # 프로세스가 종료됐기 때문에 running_process에서 제거
+
+        if end_count == len(processes):  # 종료조건(완료된 프로세스 개수)
+            flag = True
+        #테이블 생성 및 스타일 처리 부분
+        table = js.document.getElementById("timeTable")
+        for i in range(0, len(processors)):
+            newCell = table.rows[i].insertCell()
+            if using_process[i] != -1:
+                newCell.innerText = using_process[i]
+                newCell.style.background = js.getColor(using_process[i] - 1)
+                newCell.style.color = "white"
+            newCell.style.border = "0px"
+            newCell.style.width = "40px"
+        ##################
+
+    for process in processes:  # 평균응답시간 계산
+        AverageResponseTime += process.turnAround_time
+    AverageResponseTime = AverageResponseTime / len(processes)
+    js.make_end_table(current_time + 1)
+    return PowerConsumption, AverageResponseTime  # 소비전력량, 평균응답시간 반환
+
+    """
+    HRRN 스케줄링 알고리즘을 구현한 함수입니다.
+    """
+def HRRN(processes, processors):
+    js.make_start_table()
+    waiting_process = []  # 프로세서 할당받지 못한 프로세스들
+    running_process = []  # 프로세서 할당받아 실행중인 프로세스, 할당된 프로세서
+    using_process = []  # 프로세서가 할당받은 프로세스의 아이디 리스트
+    PowerConsumption = 0
+    AverageResponseTime = 0  # 평균응답시간
+    end_count = 0  # 종료조건
+    current_time = 0  # 현재 시각
+    processes.sort(key=lambda x: x.arrival_time)  # 도착 시간(일찍 도착한 순으로 정렬)
+    processors.sort(key=lambda x: x.types)  # 효율 중심
+
+    flag = False
+    while not flag:
+        using_process = []
+        for process in processes:
+            if current_time == process.arrival_time:  # 프로세스가 도착하면
+                waiting_process.append(process)
+
+        for rProcess in running_process[:]:
+            if current_time == rProcess[1].end_time:  # 프로세스가 종료되었다면
+                rProcess[0].state = 1  # 프로세서 미사용중으로 표시
+                for processor in processors:
+                    if processor.using_process_id == rProcess[1].pid:
+                        processor.using_process_id = -1
+                        break
+                end_count += 1  # 완료된 프로세스 개수 + 1
+                running_process.remove(rProcess)
+
+        for processor in processors:
+            waiting_process.sort(key=lambda x: (x.waiting_time + x.burst_time) / x.burst_time, reverse=True)  # Response ratio 역순으로 재정렬
+            if len(waiting_process) != 0 and processor.state != 2:  # 기다리는 프로세스가 있을 때 and 프로세서가 할당받지 않은 상태
+                picked_process = waiting_process.pop(0)
+                if processor.speed == 2:  # P-core면
+                    if picked_process.burst_time % 2 == 0:  # 소수점 처리
+                        picked_process.total_burst_time = picked_process.burst_time // 2
+                    else:  # 홀수면 +1 (소수점 무시 )
+                        picked_process.total_burst_time = picked_process.burst_time // 2 + 1
+
+                picked_process.start_time = current_time  # 시작 시간(start_time) 구하기
+                picked_process.end_time = picked_process.start_time + picked_process.total_burst_time  # endtime구하기
+                picked_process.waiting_time = picked_process.start_time - picked_process.arrival_time  # wt구하기
+                picked_process.turnAround_time = picked_process.waiting_time + picked_process.total_burst_time  # TT 구하기
+                picked_process.nTurnAround_time = round(picked_process.turnAround_time / picked_process.burst_time,1)  # nTT 구하기
+                if processor.state == 0:  # 시동 걸기
+                    if processor.speed == 2:
+                        PowerConsumption += 0.5
+                    else:
+                        PowerConsumption += 0.1
+
+                processor.state = 2  # 현재 프로세서 사용중으로 표시
+                processor.using_process_id = picked_process.pid
+                running_process.append((processor, picked_process))  # (사용하는 프로세서,작업중인 프로세스)
+
+        for wProcess in waiting_process:  # 프로세서 할당을 기다리는 프로세스
+            wProcess.waiting_time += 1  # 대기시간 증가
+
+        for processor in processors:  # 전력계산
+            if processor.state == 1:  # 실행중인 프로세서에게 다음 프로세스가 할당되지 않으면
+                processor.state = 0  # 프로세스 시동
+            elif processor.state == 2:  # 프로세스 전력 계산
+                if processor.speed == 2:
+                    PowerConsumption += 3
+                else:
+                    PowerConsumption += 1
+        x = sorted(processors,key=lambda x:x.id)
+        for processor in x:
+            using_process.append(processor.using_process_id)
+
+        current_time += 1
+
+        if end_count == len(processes):  # 종료조건(완료된 프로세스 개수)
+            flag = True
+        #테이블 생성 및 스타일 처리 부분
+        table = js.document.getElementById("timeTable")
+        for i in range(0, len(processors)):
+            if flag == True:
+                break
+            newCell = table.rows[i].insertCell()
+            if using_process[i] != -1:
+                newCell.innerText = using_process[i]
+                newCell.style.background = js.getColor(using_process[i] - 1)
+                newCell.style.color = "white"
+            newCell.style.border = "0px"
+            newCell.style.width = "40px"
+        ##################
+    for process in processes:  # 평균응답시간 계산
+        AverageResponseTime += process.turnAround_time
+    AverageResponseTime = AverageResponseTime / len(processes)
+    js.make_end_table(current_time)
+    return PowerConsumption, AverageResponseTime  # 소비전력량, 평균응답시간 반환
+
+    """
+    PSWG 스케줄링 알고리즘을 구현한 함수입니다.
+    """
+
+
+def PSWG(processes, processors):
+    js.make_start_table()   
+    waiting_process = []  # 프로세서 할당받지 못한 프로세스들
+    running_process = []  # 프로세서 할당받아 실행중인 프로세스, 할당된 프로세서
+    using_process = []  # 프로세서가 할당받은 프로세스의 아이디 리스트
+    PowerConsumption = 0  # 소비전력량
+    AverageResponseTime = 0  # 평균응답시간
+    end_count = 0  # 종료조건
+    current_time = 0  # 현재 시각
+
+    processes.sort(key=lambda x: x.arrival_time)  # 도착 시간(일찍 도착한 순으로 정렬)
+    processors.sort(key=lambda x: x.types)  # 효율 중심
+
+    for process in processes:
+        process.total_burst_time = 0
+
+    flag = False
+    while not flag:
+        using_process = []
+        for process in processes:
+            if current_time == process.arrival_time:  # 프로세스가 도착하면
+                waiting_process.append(process)
+
+        for rProcess in running_process[:]:  # rProcess = (사용하는 프로세서,작업중인 프로세스)
+            if rProcess[1].remain_time <= 0:  # 프로세스가 종료되었다면
+                rProcess[1].end_time = current_time  # endtime구하기
+                rProcess[1].turnAround_time = rProcess[1].waiting_time + rProcess[1].total_burst_time  # TT 구하기
+                rProcess[1].nTurnAround_time = round(rProcess[1].turnAround_time / rProcess[1].burst_time, 1)  # nTT 구하기
+                rProcess[0].state = 1  # 프로세서 미사용중으로 표시
+                if rProcess[0].id != processors[0].id:  # 첫번째 프로세서 아니면
+                    rProcess[0].completed += 1
+                    rProcess[0].completed %= 2
+                for processor in processors:
+                    if processor.using_process_id == rProcess[1].pid:
+                        processor.using_process_id = -1
+                        break
+                end_count += 1  # 완료된 프로세스 개수 + 1
+                running_process.remove(rProcess)
+
+        if len(waiting_process) > 0:
+            waiting_process.sort(key=lambda x: x.remain_time)
+
+        for rProcess in running_process[:]:  # rProcess = (사용하는 프로세서,작업중인 프로세스)
+            if len(waiting_process) > 0 and len(processors) > 1:  # 대기중인 프로세스가 있을때만 실행
+                if rProcess[0].state == 2 and rProcess[0].id == processors[0].id and waiting_process[0].remain_time < rProcess[1].remain_time:  # 선점 조건
+                    # remain_time이 적은 프로세스가 프로세서 선점
+                    waiting_process[0].start_time = current_time
+                    processors[0].using_process_id = waiting_process[0].pid
+                    running_process.append((processors[0], waiting_process[0]))  # 0번(효율 중심 정렬 후) 프로세스와 기다리던 rt 작은 프로세스 작업중인 프로세서에 넣기
+                    waiting_process.pop(0)
+                    waiting_process.append(rProcess[1])  # 작업중인 프로세서 기다리는 배열에 넣기
+                    running_process.remove(rProcess)  # rProcess 없애기
+
+        for processor in processors:
+
+            if len(waiting_process) != 0 and processor.state != 2:  # 기다리는 프로세스가 있을 때 and 프로세서가 할당받지 않은 상태
+                waiting_process.sort(key=lambda x: x.remain_time)  # remain time 짧은 순으로 정렬
+
+                if processor.completed % 2 == 0:
+                    picked_process = waiting_process.pop(0)
+                else:
+                    picked_process = waiting_process.pop(-1)
+
+                picked_process.start_time = current_time  # 시작 시간(start_time) 구하기
+
+                if processor.state == 0:  # 시동 걸기
+                    if processor.speed == 2:
+                        PowerConsumption += 0.5
+                    else:
+                        PowerConsumption += 0.1
+                processor.using_process_id = picked_process.pid
+                processor.state = 2  # 현재 프로세서 사용중으로 표시
+                running_process.append((processor, picked_process))  # (사용하는 프로세서,작업중인 프로세스)
+
+        for rProcess in running_process:
+            rProcess[1].total_burst_time += 1
+            rProcess[1].remain_time -= 1 * rProcess[0].speed
+
+        for wp in waiting_process:
+            wp.waiting_time += 1
+
+        for processor in processors:  # 전력계산
+            if processor.state == 1:  # 실행중인 프로세서에게 다음 프로세스가 할당되지 않으면
+                processor.state = 0  # 프로세스 시동 끔
+            elif processor.state == 2:  # 프로세스 전력 계산
+                if processor.speed == 2:
+                    PowerConsumption += 3
+                else:
+                    PowerConsumption += 1
+
+        x = sorted(processors,key=lambda x:x.id)
+        for processor in x:
+            using_process.append(processor.using_process_id)
+
+        if end_count == len(processes):  # 종료조건(완료된 프로세스 개수)
+            flag = True
+        #테이블 생성 및 스타일 처리 부분
+        table = js.document.getElementById("timeTable")
+        for i in range(0, len(processors)):
+            if flag == True:
+                break
+            newCell = table.rows[i].insertCell()
+            if using_process[i] != -1:
+                newCell.innerText = using_process[i]
+                newCell.style.background = js.getColor(using_process[i] - 1)
+                newCell.style.color = "white"
+            newCell.style.border = "0px"
+            newCell.style.width = "40px"
+        ##################
+
+        current_time += 1
+    
+    for process in processes:  # 평균응답시간 계산
+        AverageResponseTime += process.turnAround_time
+    AverageResponseTime = AverageResponseTime / len(processes)
+    js.make_end_table(current_time)
+    return PowerConsumption, AverageResponseTime  # 소비전력량, 평균응답시간 반환</py-script>
+        </py-script>
+    </body>
+</html>
