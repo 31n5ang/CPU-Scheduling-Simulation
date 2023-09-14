@@ -21,4 +21,4 @@ PSWG 스케줄링은 첫 번째 코어에 가장 짧은 프로세스를 계속 �
 
 기술 스택 : Python + Pyscript, Javascript, HTML, CSS
 
-* 본인은 RR, FCFS와 전반적인 시각화(Py-script, Javascript)를 담당하였습니다.
+* 본인은 RR, FCFS(Python) 와 전반적인 시각화(Pyscript, Javascript)를 담당하였습니다.
