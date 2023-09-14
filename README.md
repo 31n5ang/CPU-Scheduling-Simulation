@@ -19,9 +19,6 @@ PSWG 스케줄링은 첫 번째 코어에 가장 짧은 프로세스를 계속 �
 
 해당 프로젝트는 KOREATECH. 2023-1학기 운영체제(OS) 과목 팀 프로젝트입니다.
 
-<h3>기여</h3>
+기술 스택 : Python + Pyscript, Javascript, HTML, CSS
 
-송민상, 송승헌, 조한창, 황보성우
-
-사용 스택 : Python + Pyscript, Javascript, HTML, CSS
-
+* 본인은 RR, FCFS와 전반적인 시각화(Py-script, Javascript)를 담당하였습니다.
